@@ -11,7 +11,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'RTSP Feeds',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.black,
       ),
       home: MultiFeedPage(),
     );
@@ -25,15 +27,16 @@ class MultiFeedPage extends StatefulWidget {
 
 class _MultiFeedPageState extends State<MultiFeedPage> {
   List<VlcPlayerController> _controllers = [];
-
   final List<String> rtspUris = [
     'rtsp://admin:Secl1234@192.168.1.108:554/live',
+    'rtsp://admin:Secl1234@192.168.1.108:554/live2',
     'rtsp://admin:Secl1234@192.168.1.108:554/live',
     'rtsp://admin:Secl1234@192.168.1.108:554/live',
     'rtsp://admin:Secl1234@192.168.1.108:554/live',
-    'rtsp://admin:Secl1234@192.168.1.108:554/live',
-    'rtsp://admin:Secl1234@192.168.1.108:554/live', // Add a 6th feed
+    'rtsp://admin:Secl1234@192.168.1.108:554/live6',
   ];
+
+  int _selectedCameraIndex = 0;
 
   @override
   void initState() {
@@ -63,26 +66,58 @@ class _MultiFeedPageState extends State<MultiFeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('RTSP Feeds'),
-      ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Number of columns
-          childAspectRatio: 16 / 9, // Aspect ratio of each grid item
-          crossAxisSpacing: 4.0, // Horizontal space between items
-          mainAxisSpacing: 4.0, // Vertical space between items
+        title: const Text('RTSP Feed Viewer'),
+        centerTitle: true,
+        elevation: 10.0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          ),
         ),
-        itemCount: rtspUris.length,
-        itemBuilder: (context, index) {
-          return Container(
-            color: Colors.black,
-            child: VlcPlayer(
-              controller: _controllers[index],
-              aspectRatio: 16 / 9,
-              virtualDisplay: true,
+      ),
+      body: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: VlcPlayer(
+                    controller: _controllers[_selectedCameraIndex],
+                    aspectRatio: 16 / 9,
+                    virtualDisplay: true,
+                  ),
+                ),
+              ),
             ),
-          );
-        },
+          ),
+          Container(
+            width: 100,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(rtspUris.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _selectedCameraIndex == index
+                          ? Colors.deepPurple
+                          : Colors.grey[800],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _selectedCameraIndex = index;
+                      });
+                    },
+                    child: Text('Camera ${index + 1}'),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }
